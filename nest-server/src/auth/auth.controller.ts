@@ -1,6 +1,7 @@
 import { AuthService } from './auth.service';
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { LoginDto, CreateUserDto } from './dto';
+import { KafkaMiddleware } from 'src/kafka/kafka.middleware';
 
 @Controller('auth')
 export class AuthController {
