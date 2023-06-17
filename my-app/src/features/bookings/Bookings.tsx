@@ -13,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
 import { UserData } from "./BookingResult";
 
-
 interface TimeButtonProps {
   time: string;
   clicked: boolean;
@@ -261,29 +260,33 @@ const BookingSlot: React.FC<{ hotel: Hotel }> = (props) => {
         <Calendar
           value={bookingDate}
           onChange={onDateChange}
-          className="k-mb-4"
+          className="k-mb-4 calendar-width"
           min={currentDateTime}
         />
       </div>
-      <div className="k-mb-4 k-font-weight-bold">請選擇預約時間：</div>
-      <div className="k-mb-4">
-        <div className="timeslots-container">
-          {timeslots.map((timeslot, index) => (
-            <TimeButton
-              key={timeslot.slot}
-              time={timeslot.slot}
-              clicked={timeslot.clicked}
-              onClick={() => handleTimeClick(index)}
-              index={index}
-            />
-          ))}
-        </div>
-      </div>
+      {bookingDate && (
+        <>
+          <div className="k-mb-4 k-font-weight-bold">請選擇預約時間：</div>
+          <div className="k-mb-4">
+            <div className="timeslots-container">
+              {timeslots.map((timeslot, index) => (
+                <TimeButton
+                  key={timeslot.slot}
+                  time={timeslot.slot}
+                  clicked={timeslot.clicked}
+                  onClick={() => handleTimeClick(index)}
+                  index={index}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
       <button className="reset-btn" onClick={handleResetClick}>
         重置預約時間
       </button>
 
-      <div>可訂房間數目: {hotel.room_number} </div>
+      <div>可訂房間數目: {hotel.total_rooms} </div>
       <div>Selected Date: {bookingDate?.toDateString()}</div>
       <div>Selected Timeslot: {renderSelectedTime()}</div>
       <div>預約總時數為: {clickedCount} 小時</div>
@@ -327,7 +330,6 @@ const BookingSlot: React.FC<{ hotel: Hotel }> = (props) => {
         </div>
         <button onClick={handleSubmit}>預約 及 付款</button>
       </form>
-
     </div>
   );
 };

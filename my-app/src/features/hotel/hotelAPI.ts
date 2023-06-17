@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { get } from "../../api";
 
 export interface GalleryKey {
@@ -17,7 +17,20 @@ export interface Hotel {
   profile_pic: string;
   user_id: number;
   google_map_address: string;
-  room_number: number;
+  total_rooms: number;
+  hourly_rate: number;
+  is_deleted: boolean;
+  is_favorite: boolean;
+}
+export interface CreateHotel {
+  name: string;
+  address: string;
+  district: string;
+  phone: string;
+  description: string;
+  profile_pic: string;
+  google_map_address: string;
+  total_rooms: number;
   hourly_rate: number;
 }
 
@@ -31,12 +44,11 @@ export function UseHotelInfo() {
           {
             method: "GET",
             headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        console.log("API response:", res);
+        // console.log("API response:", res);
 
         if (!res.ok) {
           throw new Error("Error fetching hotel data");
@@ -72,4 +84,40 @@ export function useHotelDetail(id: number) {
       return hotel;
     },
   });
+}
+
+async function createHotel(hotelData: CreateHotel) {
+  const total_rooms = Number(hotelData.total_rooms);
+  const hourly_rate = Number(hotelData.hourly_rate);
+  const response = await fetch(
+    `${process.env.REACT_APP_API_SERVER}/hotel/create`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        ...hotelData,
+        total_rooms,
+        hourly_rate,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    console.error(
+      "Error creating hotel:",
+      response.status,
+      response.statusText
+    );
+    throw new Error("Error creating hotel");
+  }
+
+  return response.json();
+}
+
+// Custom hook to use the createHotel function with useMutation
+export function useCreateHotel() {
+  return useMutation(createHotel);
 }

@@ -1,17 +1,31 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./HotelList.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Title from "../title/Title";
 import { UseHotelInfo } from "../hotel/hotelAPI";
+import { IconButton, Stack } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import { getIsAdmin } from "../auth/authAPI";
+import { AuthGuard } from "../auth/AuthGuard";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
+import SearchBox from "../searchBox/SearchBox";
 
 export default function HotelList() {
   const hotelsPerPage = 9; // Change this to adjust the number of hotels per page
   const hotelInfo = UseHotelInfo();
   console.log("hotelInfo", hotelInfo);
   const [activePage, setActivePage] = useState(1);
+
+  const [buttonState, setButtonState] = useState("");
+
+  const is_auth = AuthGuard();
+
+  const navigate = useNavigate();
 
   // Calculate the index of the first and last hotel to display on the current page
   const lastIndex = activePage * hotelsPerPage;
@@ -25,7 +39,21 @@ export default function HotelList() {
 
   // Generate an array of page numbers to display in the pagination controls
   const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
+  const maxPageNumbers = 5; // Change this to adjust the maximum number of page numbers to display
+  const middlePageNumber = Math.ceil(maxPageNumbers / 2);
+  let startPageNumber = activePage - middlePageNumber + 1;
+  if (startPageNumber < 1) {
+    startPageNumber = 1;
+  }
+  let endPageNumber = startPageNumber + maxPageNumbers - 1;
+  if (endPageNumber > totalPages) {
+    endPageNumber = totalPages;
+    startPageNumber = endPageNumber - maxPageNumbers + 1;
+    if (startPageNumber < 1) {
+      startPageNumber = 1;
+    }
+  }
+  for (let i = startPageNumber; i <= endPageNumber; i++) {
     pageNumbers.push(i);
   }
 
@@ -45,10 +73,35 @@ export default function HotelList() {
     }
   };
 
+  useEffect(() => {
+    const updateButtonState = () => {
+      const isAdmin = getIsAdmin();
+
+      if (isAdmin) {
+        setButtonState("visible");
+      } else {
+        setButtonState("hidden");
+      }
+    };
+    updateButtonState();
+  }, [getIsAdmin]);
+
   return (
-    <div>
-      <Title mainTitle="酒店一覽🏩" />
-      <div>
+    <>
+      <div className="hotel-list-container">
+        <div className="title-container">
+          <Title mainTitle="酒店一覽🏩" />
+          {buttonState === "visible" && (
+            <IconButton
+              aria-label="add"
+              size="large"
+              onClick={() => navigate("/admin")}
+            >
+              <AddCircleRoundedIcon fontSize="inherit" />
+            </IconButton>
+          )}
+        </div>
+        <SearchBox />
         <Row>
           {currentHotels.map((hotel) => {
             return (
@@ -64,9 +117,26 @@ export default function HotelList() {
                   </Link>
 
                   <Card.Body>
-                    <Card.Title>{hotel.name}</Card.Title>
-                    <Card.Text>地址 : {hotel.address}</Card.Text>
+                    <div className="fav-container">
+                      <Card.Title>{hotel.name}</Card.Title>
+                      {is_auth && (
+                        <IconButton aria-label="fav">
+                          <FavoriteRoundedIcon />
+                        </IconButton>
+                      )}
+                    </div>
+                    <Card.Text>地址 : {hotel.address}</Card.Text>{" "}
                     <Card.Text>電話 : {hotel.phone}</Card.Text>
+                    {buttonState === "visible" && (
+                      <Stack direction="row" spacing={1}>
+                        <IconButton aria-label="edit">
+                          <EditRoundedIcon />
+                        </IconButton>
+                        <IconButton aria-label="delete">
+                          <DeleteIcon />
+                        </IconButton>
+                      </Stack>
+                    )}
                   </Card.Body>
                 </Card>
               </Col>
@@ -115,6 +185,6 @@ export default function HotelList() {
           </ul>
         </nav>
       </div>
-    </div>
+    </>
   );
 }
