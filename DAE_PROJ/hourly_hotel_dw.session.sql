@@ -18,24 +18,6 @@ DROP TABLE IF EXISTS dim_user;
 DROP TABLE IF EXISTS dim_time;
 DROP TABLE IF EXISTS dim_date; 
 
--- CREATE TABLE dim_date(
---     id SERIAL PRIMARY KEY,
---     year INTEGER,
---     month INTEGER,
---     day INTEGER,
---     created_at TIMESTAMP DEFAULT NOW()
--- );
-
--- CREATE unique index idx_dim_date on dim_date (year, month, day);
-
--- CREATE TABLE dim_time(
---     id SERIAL PRIMARY KEY,
---     hour INTEGER,
---     created_at TIMESTAMP DEFAULT NOW()
--- );
-
--- CREATE unique index idx_dim_time on dim_time (hour);
-
 CREATE TABLE dim_user(
     id SERIAL PRIMARY KEY,
     user_name VARCHAR(255),
@@ -81,20 +63,6 @@ CREATE TABLE fact_bookings(
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-
--- CREATE TABLE fact_searches(
---     id SERIAL PRIMARY KEY,
---     search_time TIMESTAMP,
---     search_terms VARCHAR(255),
---     search_start TIMESTAMP,
---     search_end TIMESTAMP,
---     search_duration DECIMAL(8,2),
---     user_id INTEGER,
---     FOREIGN KEY (user_id) REFERENCES dim_user(id),
---     hotel_id INTEGER,
---     FOREIGN KEY (hotel_id) REFERENCES dim_hotel(id)
--- );
-
 CREATE TABLE fact_login_breakdowns(
     id SERIAL PRIMARY KEY,
     login_time TIMESTAMP,
@@ -139,28 +107,6 @@ CREATE TABLE stg_booking(
     bk_end_time TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW()
 );
-
-
--- CREATE TABLE stg_search(
---     id SERIAL PRIMARY KEY,
---     search_time TIMESTAMP,
---     search_terms VARCHAR(255),
---     search_start TIMESTAMP,
---     search_end TIMESTAMP,
---     user_name VARCHAR(255),
---     is_admin boolean,
---     ip VARCHAR(255),
---     device VARCHAR(255),
---     os VARCHAR(255),
---     browser VARCHAR(255),
---     hotel_name VARCHAR(255),
---     hotel_address VARCHAR(255),
---     district VARCHAR(255),
---     total_rooms INTEGER,
---     hourly_rate INTEGER,
---     created_at TIMESTAMP DEFAULT NOW()
--- );
-
 
 CREATE TABLE stg_login_breakdown(
     id SERIAL PRIMARY KEY,
@@ -233,65 +179,6 @@ CREATE TRIGGER trigger_insert_fact_bookings
 AFTER INSERT ON stg_booking
 FOR EACH ROW
 EXECUTE PROCEDURE insert_fact_bookings();
-
--- -- CREATE FUNCTION for insert fact_searches FROM stg_search
--- CREATE OR REPLACE FUNCTION insert_fact_searches()
--- RETURNS TRIGGER
--- LANGUAGE plpgsql
--- AS $$
---     DECLARE
---         dim_user_id INT := 0;
---         dim_hotel_id INT := 0;
---         search_duration DECIMAL(8, 2) := 0;
---     BEGIN
---         search_duration := ROUND(EXTRACT(EPOCH FROM (NEW.search_end - NEW.search_start))::NUMERIC / 1.0, 2);
---         INSERT INTO dim_user
---             (user_name, is_admin)
---             VALUES
---             (NEW.user_name, NEW.is_admin)
---             ON CONFLICT (user_name, is_admin)
---             DO 
---                 UPDATE SET created_at=NEW.created_at
---                 RETURNING id
---                 INTO dim_user_id;
---         INSERT INTO dim_hotel
---             (hotel_name, hotel_address, district, total_rooms, hourly_rate)
---             VALUES
---             (NEW.hotel_name, NEW.hotel_address, NEW.district, NEW.total_rooms, NEW.hourly_rate)
---             ON CONFLICT (hotel_name, hotel_address, district)
---             DO 
---                 UPDATE SET created_at=NEW.created_at
---                 RETURNING id
---                 INTO dim_hotel_id;
---         INSERT INTO fact_searches (
---             search_time,
---             search_terms,
---             search_start,
---             search_end,
---             search_duration,
---             user_id,
---             hotel_id
---             )
---         VALUES (
---             NEW.search_time,
---             NEW.search_terms,
---             NEW.search_start,
---             NEW.search_end,
---             search_duration,
---             dim_user_id,
---             dim_hotel_id
---         );
---         RETURN NEW;
---     END;
--- $$;
-
--- DROP TRIGGER IF EXISTS trigger_insert_fact_searches ON stg_search CASCADE; 
--- CREATE TRIGGER trigger_insert_fact_searches
--- AFTER INSERT ON stg_search
--- FOR EACH ROW
--- EXECUTE PROCEDURE insert_fact_searches();
-
-
 
 -- CREATE FUNCTION for insert fact_login_breakdowns FROM stg_login_breakdown
 CREATE OR REPLACE FUNCTION insert_fact_login_breakdowns()

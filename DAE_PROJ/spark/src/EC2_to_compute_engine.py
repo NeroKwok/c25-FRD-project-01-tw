@@ -1,8 +1,7 @@
-# %%
 from pyspark.sql import SparkSession
-# import os
-# import schedule
-# import time
+import os
+import schedule
+import time
 
 
 def run_etl():
@@ -201,20 +200,20 @@ def run_etl():
 
     print(dw_df.head(10))
 
-    #Load
-    # print('------------------------------- [LOAD] Transform to GCP DW -------------------------------')
-    # dw_df.write.jdbc(dest_jdbc_gcp_dw_url, "stg_booking",
-    #                           mode="append", properties=dest_jdbc_gcp_dw_properties)
+    # Load
+    print('------------------------------- [LOAD] Transform to GCP DW -------------------------------')
+    dw_df.write.jdbc(dest_jdbc_gcp_dw_url, "stg_booking",
+                              mode="append", properties=dest_jdbc_gcp_dw_properties)
 
     spark.stop()
 
 
 run_etl()
 
-# # schedule the ETL process to run every day at 2 AM
-# schedule.every().day.at('00:01').do(run_etl)
+# schedule the ETL process to run every day at 2 AM
+schedule.every().day.at('00:01').do(run_etl)
 
-# # keep the script running indefinitely to allow the scheduled jobs to run
-# while True:
-#     schedule.run_pending()
-#     time.sleep(1)
+# keep the script running indefinitely to allow the scheduled jobs to run
+while True:
+    schedule.run_pending()
+    time.sleep(1)

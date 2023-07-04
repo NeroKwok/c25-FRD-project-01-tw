@@ -14,12 +14,6 @@ conn = psycopg2.connect(
     password='postgres'
 )
 
-# POSTGRES_HOST = os.getenv("POSTGRES_HOST")
-# POSTGRES_DB = os.getenv("POSTGRES_DB")
-# POSTGRES_USER = os.getenv("POSTGRES_USER")
-# POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-
-# conn = psycopg2.connect(dbname=POSTGRES_DB, user=POSTGRES_USER, password=POSTGRES_PASSWORD, host=POSTGRES_HOST)
 cur = conn.cursor()
 
 # Read data from CSV file
